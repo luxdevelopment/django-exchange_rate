@@ -3,6 +3,8 @@ from django.core.management.base import BaseCommand
 from exchange_rate.utils import get_exchange_currency_entries
 from exchange_rate.models import ExchangeRate
 
+from decimal import Decimal
+
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
@@ -25,6 +27,7 @@ class Command(BaseCommand):
                 other_currency_name = other_currency_name + ' ' + o
             other_currency_name = other_currency_name.strip()
             exchange_rate = o_raw[0]
+            exchange_rate = Decimal(exchange_rate.replace(',', ''))
             try:
                 exchange_rate_obj = ExchangeRate.objects.get(base_currency=base_currency, other_currency=other_currency)
                 exchange_rate_obj.exchange_rate = exchange_rate

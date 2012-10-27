@@ -1,11 +1,11 @@
 from django.conf import settings
 import feedparser
 from exchange_rate.models import ExchangeRate
+from decimal import Decimal
 
-CURRENCY_FEED_LINK = 'http://themoneyconverter.com/%s/rss.xml' % settings.BASE_CURRENCY
+CURRENCY_FEED_LINK = 'feed://themoneyconverter.com/rss-feed/%s/rss.xml' % settings.BASE_CURRENCY
 
 def get_exchange_currency(currency_symbol, base_currency=None):
-    
     '''
     We are grabbing latest exchange currency rate from themoneyconverter.com
     Please change BASE_CURRENCY accordingly
@@ -23,11 +23,12 @@ def get_exchange_currency(currency_symbol, base_currency=None):
         return er.exchange_rate
     feed_exchange = feedparser.parse(CURRENCY_FEED_LINK)
     if base_currency:
-        feed_exchange = feedparser.parse('http://themoneyconverter.com/%s/rss.xml' % base_currency)
+        feed_exchange = feedparser.parse('feed://themoneyconverter.com/rss-feed/%s/rss.xml' % base_currency)
     for raw in feed_exchange['entries']:
         if currency_symbol == raw['title_detail']['value'].split('/')[0]:
             _raw = raw['summary'].split('=')[1]
-            return _raw.split(' ')[1]
+            exchange_rate = _raw.split(' ')[1]
+            return Decimal(exchange_rate.replace(',', ''))
 
 def get_exchange_currency_entries(base_currency=None):
     '''
@@ -38,6 +39,6 @@ def get_exchange_currency_entries(base_currency=None):
     '''
     feed_exchange = feedparser.parse(CURRENCY_FEED_LINK)
     if base_currency:
-        feed_exchange = feedparser.parse('http://themoneyconverter.com/%s/rss.xml' % base_currency)
+        feed_exchange = feedparser.parse('feed://themoneyconverter.com/rss-feed/%s/rss.xml' % base_currency)
     return feed_exchange['entries']
 
