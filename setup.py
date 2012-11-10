@@ -14,5 +14,4 @@ setup(
       long_description=open('README.rst').read(),
       zip_safe=False,
       install_requires = "feedparser",
-      
 )
