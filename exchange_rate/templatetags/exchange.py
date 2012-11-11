@@ -1,5 +1,7 @@
-from django.template import Library, Node, TemplateSyntaxError
+from django.template import Library, Node, TemplateSyntaxError, Variable
 from exchange_rate.utils import get_exchange_currency
+
+from decimal import Decimal
 
 class ExchangeRateTag(Node):
 
@@ -14,7 +16,7 @@ class ExchangeRateTag(Node):
 
 def get_exchange_rate(parser, token):
     bits = token.contents.split()
-    if len(bits) <= 3:
+    if len(bits) < 3:
         raise TemplateSyntaxError('please pass arguments to this tag, ie {% get_exchange_rate currency_symbol base_currency_symbol(optional) %}')
     if len(bits) == 3:
         return ExchangeRateTag(bits[1], bits[2])
@@ -24,7 +26,7 @@ def get_exchange_rate(parser, token):
 class ConvertPriceTag(Node):
 
     def __init__(self, price, currency_symbol, base_currency_symbol=None):
-        self.price = price
+        self.price = Variable(price)
         self.currency_symbol = currency_symbol
         self.base_currency_symbol = base_currency_symbol
     
@@ -34,12 +36,12 @@ class ConvertPriceTag(Node):
             rate = get_exchange_currency(self.currency_symbol, self.base_currency_symbol)
         else:
             rate = get_exchange_currency(self.currency_symbol)
-        return (self.price * rate)
+        return Decimal(self.price.resolve(context) * rate).quantize(Decimal("0.01"))
 
 
 def convert_price(parser, token):
     bits = token.contents.split()
-    if len(bits) <= 4:
+    if len(bits) <= 2:
         raise TemplateSyntaxError('please pass arguments to this tag, ie {% get_exchange_rate price currency_symbol base_currency_symbol(optional) %}') 
     if len(bits) == 4:
         return ConvertPriceTag(bits[1], bits[2], bits[3])

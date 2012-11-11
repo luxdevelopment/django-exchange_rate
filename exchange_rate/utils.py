@@ -1,6 +1,6 @@
 from django.conf import settings
 import feedparser
-from exchange_rate.models import ExchangeRate
+from models import ExchangeRate
 from decimal import Decimal
 
 CURRENCY_FEED_LINK = 'feed://themoneyconverter.com/rss-feed/%s/rss.xml' % settings.BASE_CURRENCY
@@ -41,4 +41,4 @@ def get_exchange_currency_entries(base_currency=None):
     if base_currency:
         feed_exchange = feedparser.parse('feed://themoneyconverter.com/rss-feed/%s/rss.xml' % base_currency)
     return feed_exchange['entries']
-
+#
